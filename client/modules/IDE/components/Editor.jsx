@@ -68,73 +68,19 @@ class Editor extends React.Component {
     this.showFind = this.showFind.bind(this);
     this.findNext = this.findNext.bind(this);
     this.findPrev = this.findPrev.bind(this);
+    this.setCodemirror = this.setCodemirror.bind(this);
+    this.toggleTextArea = this.toggleTextArea.bind(this);
+    this.state = {
+      isTextArea: false
+    };
   }
 
   componentDidMount() {
     this.beep = new Audio(beepUrl);
     this.widgets = [];
-    this._cm = CodeMirror(this.codemirrorContainer, { // eslint-disable-line
-      theme: `p5-${this.props.theme}`,
-      lineNumbers: true,
-      styleActiveLine: true,
-      inputStyle: 'contenteditable',
-      lineWrapping: false,
-      fixedGutter: false,
-      foldGutter: true,
-      foldOptions: { widget: '\u2026' },
-      gutters: ['CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
-      keyMap: 'sublime',
-      highlightSelectionMatches: true, // highlight current search match
-      lint: {
-        onUpdateLinting: ((annotations) => {
-          this.props.hideRuntimeErrorWarning();
-          this.updateLintingMessageAccessibility(annotations);
-        }),
-        options: {
-          'asi': true,
-          'eqeqeq': false,
-          '-W041': false,
-          'esversion': 6
-        }
-      }
-    });
-
-    this._cm.setOption('extraKeys', {
-      [`${metaKey}-Enter`]: () => null,
-      [`Shift-${metaKey}-Enter`]: () => null,
-      [`${metaKey}-F`]: 'findPersistent',
-      [`${metaKey}-G`]: 'findNext',
-      [`Shift-${metaKey}-G`]: 'findPrev',
-    });
-
     this.initializeDocuments(this.props.files);
+    this.setCodemirror();
     this._cm.swapDoc(this._docs[this.props.file.id]);
-
-    this._cm.on('change', debounce(() => {
-      this.props.setUnsavedChanges(true);
-      this.props.updateFileContent(this.props.file.name, this._cm.getValue());
-      if (this.props.autorefresh && this.props.isPlaying) {
-        this.props.startRefreshSketch();
-        this.props.clearConsole();
-      }
-    }, 400));
-
-    this._cm.on('keyup', () => {
-      const temp = `line ${parseInt((this._cm.getCursor().line) + 1, 10)}`;
-      document.getElementById('current-line').innerHTML = temp;
-    });
-
-    this._cm.on('keydown', (_cm, e) => {
-      // 9 === Tab
-      if (e.keyCode === 9 && e.shiftKey) {
-        this.tidyCode();
-      }
-    });
-
-    this._cm.getWrapperElement().style['font-size'] = `${this.props.fontSize}px`;
-    this._cm.setOption('indentWithTabs', this.props.isTabIndent);
-    this._cm.setOption('tabSize', this.props.indentationAmount);
-
     this.props.provideController({
       tidyCode: this.tidyCode,
       showFind: this.showFind,
@@ -263,6 +209,81 @@ class Editor extends React.Component {
     }
   }
 
+  toggleTextArea() {
+    if (!this.state.isTextArea) {
+      this._cm.toTextArea();
+      this.codemirrorContainer.addEventListener('keyup', () => {
+        this.props.updateFileContent(this.props.file.name, this.codemirrorContainer.value);
+      });
+    } else {
+      this.setCodemirror();
+    }
+    this.state.isTextArea = !this.state.isTextArea;
+  }
+
+  setCodemirror() {
+    this._cm = CodeMirror.fromTextArea(this.codemirrorContainer, { // eslint-disable-line
+      theme: `p5-${this.props.theme}`,
+      lineNumbers: true,
+      styleActiveLine: true,
+      inputStyle: 'contenteditable',
+      lineWrapping: false,
+      fixedGutter: false,
+      foldGutter: true,
+      foldOptions: { widget: '\u2026' },
+      gutters: ['CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
+      keyMap: 'sublime',
+      highlightSelectionMatches: true, // highlight current search match
+      lint: {
+        onUpdateLinting: ((annotations) => {
+          this.props.hideRuntimeErrorWarning();
+          this.updateLintingMessageAccessibility(annotations);
+        }),
+        options: {
+          'asi': true,
+          'eqeqeq': false,
+          '-W041': false,
+          'esversion': 6
+        }
+      }
+    });
+
+    this._cm.setOption('extraKeys', {
+      [`${metaKey}-Enter`]: () => null,
+      [`Shift-${metaKey}-Enter`]: () => null,
+      [`${metaKey}-F`]: 'findPersistent',
+      [`${metaKey}-G`]: 'findNext',
+      [`Shift-${metaKey}-G`]: 'findPrev',
+    });
+
+
+    this._cm.on('change', debounce(() => {
+      this.props.setUnsavedChanges(true);
+      this.props.updateFileContent(this.props.file.name, this._cm.getValue());
+      console.log('poop');
+      if (this.props.autorefresh && this.props.isPlaying) {
+        this.props.startRefreshSketch();
+        this.props.clearConsole();
+      }
+    }, 400));
+
+    this._cm.on('keyup', () => {
+      const temp = `line ${parseInt((this._cm.getCursor().line) + 1, 10)}`;
+      document.getElementById('current-line').innerHTML = temp;
+    });
+
+    this._cm.on('keydown', (_cm, e) => {
+      // 9 === Tab
+      if (e.keyCode === 9 && e.shiftKey) {
+        this.tidyCode();
+      }
+    });
+
+    this._cm.getWrapperElement().style['font-size'] = `${this.props.fontSize}px`;
+    this._cm.setOption('indentWithTabs', this.props.isTabIndent);
+    this._cm.setOption('tabSize', this.props.indentationAmount);
+  }
+
   _cm: CodeMirror.Editor
 
   render() {
@@ -279,6 +300,7 @@ class Editor extends React.Component {
         className={editorSectionClass}
       >
         <header className="editor__header">
+          <button onClick={this.toggleTextArea}>Toggle TextArea</button>
           <button
             aria-label="collapse file navigation"
             className="sidebar__contract"
@@ -304,8 +326,8 @@ class Editor extends React.Component {
             />
           </div>
         </header>
-        <div ref={(element) => { this.codemirrorContainer = element; }} className="editor-holder" tabIndex="0">
-        </div>
+        <textarea ref={(element) => { this.codemirrorContainer = element; }} className="editor-holder" tabIndex="0">
+        </textarea>
         <EditorAccessibility
           lintMessages={this.props.lintMessages}
         />

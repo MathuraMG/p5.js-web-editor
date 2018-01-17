@@ -180,21 +180,21 @@ class PreviewFrame extends React.Component {
 
   injectLocalFiles() {
     const htmlFile = this.props.htmlFile.content;
+    console.log(htmlFile);
     let scriptOffs = [];
 
     const resolvedFiles = this.resolveJSAndCSSLinks(this.props.files);
-
+    console.log(resolvedFiles);
     const parser = new DOMParser();
     const sketchDoc = parser.parseFromString(htmlFile, 'text/html');
 
     const base = sketchDoc.createElement('base');
     base.href = `${window.location.href}/`;
     sketchDoc.head.appendChild(base);
-
     this.resolvePathsForElementsWithAttribute('src', sketchDoc, resolvedFiles);
     this.resolvePathsForElementsWithAttribute('href', sketchDoc, resolvedFiles);
     // should also include background, data, poster, but these are used way less often
-
+    debugger;
     this.resolveScripts(sketchDoc, resolvedFiles);
     this.resolveStyles(sketchDoc, resolvedFiles);
 
@@ -306,7 +306,6 @@ class PreviewFrame extends React.Component {
         }
       }
     });
-
     return this.jsPreprocess(newContent);
   }
 
@@ -325,6 +324,7 @@ class PreviewFrame extends React.Component {
         }
       }
     });
+
     return newContent;
   }
 
