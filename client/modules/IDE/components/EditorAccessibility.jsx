@@ -27,7 +27,9 @@ class EditorAccessibility extends React.Component {
           {messages}
         </ul>
         <p> Current line
-          <span className="editor-linenumber" aria-live="polite" aria-atomic="true" id="current-line"> </span>
+          <span className="editor-linenumber" aria-live="polite" aria-atomic="true" id="current-line">
+            line-0
+          </span>
         </p>
       </div>
     );

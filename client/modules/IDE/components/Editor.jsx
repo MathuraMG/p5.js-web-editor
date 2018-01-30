@@ -161,6 +161,69 @@ class Editor extends React.Component {
     return mode;
   }
 
+  setCodemirror() {
+    this._cm = CodeMirror.fromTextArea(this.codemirrorContainer, { // eslint-disable-line
+      theme: `p5-${this.props.theme}`,
+      lineNumbers: true,
+      styleActiveLine: true,
+      inputStyle: 'contenteditable',
+      lineWrapping: false,
+      fixedGutter: false,
+      foldGutter: true,
+      foldOptions: { widget: '\u2026' },
+      gutters: ['CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
+      keyMap: 'sublime',
+      highlightSelectionMatches: true, // highlight current search match
+      lint: {
+        onUpdateLinting: ((annotations) => {
+          this.props.hideRuntimeErrorWarning();
+          this.updateLintingMessageAccessibility(annotations);
+        }),
+        options: {
+          'asi': true,
+          'eqeqeq': false,
+          '-W041': false,
+          'esversion': 6
+        }
+      }
+    });
+
+    this._cm.setOption('extraKeys', {
+      [`${metaKey}-Enter`]: () => null,
+      [`Shift-${metaKey}-Enter`]: () => null,
+      [`${metaKey}-F`]: 'findPersistent',
+      [`${metaKey}-G`]: 'findNext',
+      [`Shift-${metaKey}-G`]: 'findPrev',
+    });
+
+
+    this._cm.on('change', debounce(() => {
+      this.props.setUnsavedChanges(true);
+      this.props.updateFileContent(this.props.file.name, this._cm.getValue());
+
+      if (this.props.autorefresh && this.props.isPlaying) {
+        this.props.startRefreshSketch();
+        this.props.clearConsole();
+      }
+    }, 400));
+
+    this._cm.on('keyup', () => {
+      const temp = parseInt((this._cm.getCursor().line) + 1, 10);
+      document.getElementById('current-line').innerHTML = `line-${temp}`;
+    });
+
+    this._cm.on('keydown', (_cm, e) => {
+      // 9 === Tab
+      if (e.keyCode === 9 && e.shiftKey) {
+        this.tidyCode();
+      }
+    });
+
+    this._cm.getWrapperElement().style['font-size'] = `${this.props.fontSize}px`;
+    this._cm.setOption('indentWithTabs', this.props.isTabIndent);
+    this._cm.setOption('tabSize', this.props.indentationAmount);
+  }
+
   initializeDocuments(files) {
     this._docs = {};
     files.forEach((file) => {
@@ -214,74 +277,16 @@ class Editor extends React.Component {
       this._cm.toTextArea();
       this.codemirrorContainer.addEventListener('keyup', () => {
         this.props.updateFileContent(this.props.file.name, this.codemirrorContainer.value);
+        const oldLine = document.getElementById('current-line').innerHTML;
+        const currentLine = `line-${(String)(this.codemirrorContainer.value.substr(0, this.codemirrorContainer.selectionStart).split('\n').length)}`;
+        if (oldLine !== currentLine) {
+          document.getElementById('current-line').innerHTML = currentLine;
+        }
       });
     } else {
       this.setCodemirror();
     }
     this.state.isTextArea = !this.state.isTextArea;
-  }
-
-  setCodemirror() {
-    this._cm = CodeMirror.fromTextArea(this.codemirrorContainer, { // eslint-disable-line
-      theme: `p5-${this.props.theme}`,
-      lineNumbers: true,
-      styleActiveLine: true,
-      inputStyle: 'contenteditable',
-      lineWrapping: false,
-      fixedGutter: false,
-      foldGutter: true,
-      foldOptions: { widget: '\u2026' },
-      gutters: ['CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
-      keyMap: 'sublime',
-      highlightSelectionMatches: true, // highlight current search match
-      lint: {
-        onUpdateLinting: ((annotations) => {
-          this.props.hideRuntimeErrorWarning();
-          this.updateLintingMessageAccessibility(annotations);
-        }),
-        options: {
-          'asi': true,
-          'eqeqeq': false,
-          '-W041': false,
-          'esversion': 6
-        }
-      }
-    });
-
-    this._cm.setOption('extraKeys', {
-      [`${metaKey}-Enter`]: () => null,
-      [`Shift-${metaKey}-Enter`]: () => null,
-      [`${metaKey}-F`]: 'findPersistent',
-      [`${metaKey}-G`]: 'findNext',
-      [`Shift-${metaKey}-G`]: 'findPrev',
-    });
-
-
-    this._cm.on('change', debounce(() => {
-      this.props.setUnsavedChanges(true);
-      this.props.updateFileContent(this.props.file.name, this._cm.getValue());
-      console.log('poop');
-      if (this.props.autorefresh && this.props.isPlaying) {
-        this.props.startRefreshSketch();
-        this.props.clearConsole();
-      }
-    }, 400));
-
-    this._cm.on('keyup', () => {
-      const temp = `line ${parseInt((this._cm.getCursor().line) + 1, 10)}`;
-      document.getElementById('current-line').innerHTML = temp;
-    });
-
-    this._cm.on('keydown', (_cm, e) => {
-      // 9 === Tab
-      if (e.keyCode === 9 && e.shiftKey) {
-        this.tidyCode();
-      }
-    });
-
-    this._cm.getWrapperElement().style['font-size'] = `${this.props.fontSize}px`;
-    this._cm.setOption('indentWithTabs', this.props.isTabIndent);
-    this._cm.setOption('tabSize', this.props.indentationAmount);
   }
 
   _cm: CodeMirror.Editor
