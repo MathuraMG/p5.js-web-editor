@@ -93,6 +93,7 @@ class Editor extends React.Component {
     // check if files have changed
     if (this.props.files[0].id !== nextProps.files[0].id) {
       // then need to make CodeMirror documents
+
       this.initializeDocuments(nextProps.files);
     }
     if (this.props.files.length !== nextProps.files.length) {
@@ -103,8 +104,10 @@ class Editor extends React.Component {
   componentDidUpdate(prevProps) {
     if (this.props.file.content !== prevProps.file.content &&
         this.props.file.content !== this._cm.getValue()) {
+      // debugger;
       const oldDoc = this._cm.swapDoc(this._docs[this.props.file.id]);
       this._docs[prevProps.file.id] = oldDoc;
+      this._cm.getTextArea().value = this.props.file.content;
       this._cm.focus();
       if (!prevProps.unsavedChanges) {
         setTimeout(() => this.props.setUnsavedChanges(false), 400);
@@ -150,7 +153,7 @@ class Editor extends React.Component {
     if (fileName.match(/.+\.js$/i)) {
       mode = 'javascript';
     } else if (fileName.match(/.+\.css$/i)) {
-      mode = 'css';
+      mode = 'javascript';
     } else if (fileName.match(/.+\.html$/i)) {
       mode = 'htmlmixed';
     } else if (fileName.match(/.+\.json$/i)) {
@@ -164,6 +167,8 @@ class Editor extends React.Component {
   setCodemirror() {
     this._cm = CodeMirror.fromTextArea(this.codemirrorContainer, { // eslint-disable-line
       theme: `p5-${this.props.theme}`,
+      // mode: this.getFileMode(file.name)
+      mode: 'javascript',
       lineNumbers: true,
       styleActiveLine: true,
       inputStyle: 'contenteditable',
@@ -225,10 +230,11 @@ class Editor extends React.Component {
   }
 
   initializeDocuments(files) {
+    console.log('its switching in here');
     this._docs = {};
     files.forEach((file) => {
       if (file.name !== 'root') {
-        this._docs[file.id] = CodeMirror.Doc(file.content, this.getFileMode(file.name)); // eslint-disable-line
+        this._docs[file.id] = CodeMirror.Doc(file.content, this.getFileMode(file.name)); // eslint-disable-line;
       }
     });
   }
@@ -285,8 +291,10 @@ class Editor extends React.Component {
       });
     } else {
       this.setCodemirror();
+      // this._cm.swapDoc(this._docs[this.props.file.id]);
     }
     this.state.isTextArea = !this.state.isTextArea;
+    console.log(this._docs['5a7bb72737fe0b0681b4148e']);
   }
 
   _cm: CodeMirror.Editor
@@ -305,7 +313,6 @@ class Editor extends React.Component {
         className={editorSectionClass}
       >
         <header className="editor__header">
-          <button onClick={this.toggleTextArea}>Toggle TextArea</button>
           <button
             aria-label="collapse file navigation"
             className="sidebar__contract"
@@ -320,6 +327,7 @@ class Editor extends React.Component {
           >
             <InlineSVG src={rightArrowUrl} />
           </button>
+          <button className="editor__toggle-text" onClick={this.toggleTextArea}>Toggle TextArea</button>
           <div className="editor__file-name">
             <span>
               {this.props.file.name}

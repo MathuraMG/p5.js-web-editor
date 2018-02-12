@@ -25,6 +25,7 @@ export class FileNode extends React.Component {
   handleFileClick(e) {
     e.stopPropagation();
     if (this.props.name !== 'root' && !this.isDeleting) {
+      console.log(this.props.name);
       this.props.setSelectedFile(this.props.id);
     }
   }
