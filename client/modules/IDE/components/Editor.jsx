@@ -156,7 +156,7 @@ class Editor extends React.Component {
     if (fileName.match(/.+\.js$/i)) {
       mode = 'javascript';
     } else if (fileName.match(/.+\.css$/i)) {
-      mode = 'javascript';
+      mode = 'css';
     } else if (fileName.match(/.+\.html$/i)) {
       mode = 'htmlmixed';
     } else if (fileName.match(/.+\.json$/i)) {
