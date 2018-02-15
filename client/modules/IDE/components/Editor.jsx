@@ -71,9 +71,7 @@ class Editor extends React.Component {
     this.findPrev = this.findPrev.bind(this);
     this.setCodemirror = this.setCodemirror.bind(this);
     this.toggleTextArea = this.toggleTextArea.bind(this);
-    this.state = {
-      isTextArea: false
-    };
+    this.setEditorArea = this.setEditorArea.bind(this);
   }
 
   componentDidMount() {
@@ -126,7 +124,10 @@ class Editor extends React.Component {
     if (this.props.theme !== prevProps.theme) {
       this._cm.setOption('theme', `p5-${this.props.theme}`);
     }
-
+    if (this.props.textArea !== prevProps.textArea) {
+      console.log(this.props.textArea);
+      this.setEditorArea();
+    }
     if (prevProps.consoleEvents !== this.props.consoleEvents) {
       this.props.showRuntimeErrorWarning();
     }
@@ -232,29 +233,23 @@ class Editor extends React.Component {
     this._cm.setOption('tabSize', this.props.indentationAmount);
   }
 
-  initializeDocuments(files) {
-    console.log('its switching in here');
-    this._docs = {};
-    files.forEach((file) => {
-      if (file.name !== 'root') {
-        this._docs[file.id] = CodeMirror.Doc(file.content, this.getFileMode(file.name)); // eslint-disable-line;
-      }
-    });
-  }
-
-  tidyCode() {
-    const beautifyOptions = {
-      indent_size: this.props.indentationAmount,
-      indent_with_tabs: this.props.isTabIndent
-    };
-
-    const mode = this._cm.getOption('mode');
-    if (mode === 'javascript') {
-      this._cm.doc.setValue(beautifyJS(this._cm.doc.getValue(), beautifyOptions));
-    } else if (mode === 'css') {
-      this._cm.doc.setValue(beautifyCSS(this._cm.doc.getValue(), beautifyOptions));
-    } else if (mode === 'htmlmixed') {
-      this._cm.doc.setValue(beautifyHTML(this._cm.doc.getValue(), beautifyOptions));
+  setEditorArea() {
+    console.log(this.props.textArea);
+    if (this.props.textArea) {
+      console.log('hi');
+      this._cm.toTextArea();
+      this.codemirrorContainer.addEventListener('keyup', () => {
+        this.props.updateFileContent(this.props.file.name, this.codemirrorContainer.value);
+        const oldLine = document.getElementById('current-line').innerHTML;
+        const currentLine = `line-${(String)(
+          this.codemirrorContainer.value.substr(0, this.codemirrorContainer.selectionStart).split('\n').length
+        )}`;
+        if (oldLine !== currentLine) {
+          document.getElementById('current-line').innerHTML = currentLine;
+        }
+      });
+    } else {
+      this.setCodemirror();
     }
   }
 
@@ -281,23 +276,39 @@ class Editor extends React.Component {
     }
   }
 
-  toggleTextArea() {
-    if (!this.state.isTextArea) {
-      this._cm.toTextArea();
-      this.codemirrorContainer.addEventListener('keyup', () => {
-        this.props.updateFileContent(this.props.file.name, this.codemirrorContainer.value);
-        const oldLine = document.getElementById('current-line').innerHTML;
-        const currentLine = `line-${(String)(this.codemirrorContainer.value.substr(0, this.codemirrorContainer.selectionStart).split('\n').length)}`;
-        if (oldLine !== currentLine) {
-          document.getElementById('current-line').innerHTML = currentLine;
-        }
-      });
-    } else {
-      this.setCodemirror();
-      // this._cm.swapDoc(this._docs[this.props.file.id]);
+  tidyCode() {
+    const beautifyOptions = {
+      indent_size: this.props.indentationAmount,
+      indent_with_tabs: this.props.isTabIndent
+    };
+
+    const mode = this._cm.getOption('mode');
+    if (mode === 'javascript') {
+      this._cm.doc.setValue(beautifyJS(this._cm.doc.getValue(), beautifyOptions));
+    } else if (mode === 'css') {
+      this._cm.doc.setValue(beautifyCSS(this._cm.doc.getValue(), beautifyOptions));
+    } else if (mode === 'htmlmixed') {
+      this._cm.doc.setValue(beautifyHTML(this._cm.doc.getValue(), beautifyOptions));
     }
-    this.state.isTextArea = !this.state.isTextArea;
-    console.log(this._docs['5a7bb72737fe0b0681b4148e']);
+  }
+
+  initializeDocuments(files) {
+    console.log('its switching in here');
+    this._docs = {};
+    files.forEach((file) => {
+      if (file.name !== 'root') {
+        this._docs[file.id] = CodeMirror.Doc(file.content, this.getFileMode(file.name)); // eslint-disable-line;
+      }
+    });
+  }
+
+  toggleTextArea() {
+    if (!this.props.textArea) {
+      this.props.setTextArea(true);
+    } else {
+      this.props.setTextArea(false);
+    }
+    // this.setEditorArea();
   }
 
   _cm: CodeMirror.Editor
@@ -380,6 +391,8 @@ Editor.propTypes = {
   closeEditorOptions: PropTypes.func.isRequired,
   setUnsavedChanges: PropTypes.func.isRequired,
   startRefreshSketch: PropTypes.func.isRequired,
+  setTextArea: PropTypes.func.isRequired,
+  textArea: PropTypes.bool.isRequired,
   autorefresh: PropTypes.bool.isRequired,
   isPlaying: PropTypes.bool.isRequired,
   theme: PropTypes.string.isRequired,

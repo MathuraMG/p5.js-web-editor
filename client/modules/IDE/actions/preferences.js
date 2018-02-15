@@ -155,6 +155,24 @@ export function setGridOutput(value) {
   };
 }
 
+export function setTextArea(value) {
+  return (dispatch, getState) => {
+    dispatch({
+      type: ActionTypes.SET_TEXT_AREA,
+      value
+    });
+    const state = getState();
+    if (state.user.authenticated) {
+      const formParams = {
+        preferences: {
+          textArea: value
+        }
+      };
+      updatePreferences(formParams, dispatch);
+    }
+  };
+}
+
 export function setSoundOutput(value) {
   return (dispatch, getState) => {
     dispatch({
@@ -224,4 +242,3 @@ export function setAllAccessibleOutput(value) {
     dispatch(setSoundOutput(value));
   };
 }
-

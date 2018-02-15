@@ -245,6 +245,7 @@ class IDEView extends React.Component {
           saveProject={this.props.saveProject}
           currentUser={this.props.user.username}
           showHelpModal={this.props.showHelpModal}
+          setTextArea={this.props.setTextArea}
         />
         {this.props.ide.preferencesIsVisible &&
           <Overlay
@@ -267,9 +268,11 @@ class IDEView extends React.Component {
               textOutput={this.props.preferences.textOutput}
               gridOutput={this.props.preferences.gridOutput}
               soundOutput={this.props.preferences.soundOutput}
+              textArea={this.props.preferences.textArea}
               setTextOutput={this.props.setTextOutput}
               setGridOutput={this.props.setGridOutput}
               setSoundOutput={this.props.setSoundOutput}
+              setTextArea={this.props.setTextArea}
               theme={this.props.preferences.theme}
               setTheme={this.props.setTheme}
               serveSecure={this.props.project.serveSecure}
@@ -341,6 +344,8 @@ class IDEView extends React.Component {
                   startRefreshSketch={this.props.startRefreshSketch}
                   stopSketch={this.props.stopSketch}
                   autorefresh={this.props.preferences.autorefresh}
+                  textArea={this.props.preferences.textArea}
+                  setTextArea={this.props.setTextArea}
                   unsavedChanges={this.props.ide.unsavedChanges}
                   projectSavedTime={this.props.project.updatedAt}
                   isExpanded={this.props.ide.sidebarIsExpanded}
@@ -576,7 +581,8 @@ IDEView.propTypes = {
     gridOutput: PropTypes.bool.isRequired,
     soundOutput: PropTypes.bool.isRequired,
     theme: PropTypes.string.isRequired,
-    autorefresh: PropTypes.bool.isRequired
+    autorefresh: PropTypes.bool.isRequired,
+    textArea: PropTypes.bool.isRequired
   }).isRequired,
   closePreferences: PropTypes.func.isRequired,
   setFontSize: PropTypes.func.isRequired,
@@ -588,6 +594,7 @@ IDEView.propTypes = {
   setTextOutput: PropTypes.func.isRequired,
   setGridOutput: PropTypes.func.isRequired,
   setSoundOutput: PropTypes.func.isRequired,
+  setTextArea: PropTypes.func.isRequired,
   setAllAccessibleOutput: PropTypes.func.isRequired,
   files: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.string.isRequired,

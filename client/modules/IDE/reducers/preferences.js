@@ -10,7 +10,8 @@ const initialState = {
   gridOutput: false,
   soundOutput: false,
   theme: 'light',
-  autorefresh: false
+  autorefresh: false,
+  textArea: false
 };
 
 const preferences = (state = initialState, action) => {
@@ -37,6 +38,9 @@ const preferences = (state = initialState, action) => {
       return Object.assign({}, state, { gridOutput: action.value });
     case ActionTypes.SET_SOUND_OUTPUT:
       return Object.assign({}, state, { soundOutput: action.value });
+    case ActionTypes.SET_TEXT_AREA:
+      console.log(state);
+      return Object.assign({}, state, { textArea: action.value });
     case ActionTypes.SET_PREFERENCES:
       return action.preferences;
     case ActionTypes.SET_THEME:

@@ -247,37 +247,30 @@ class Preferences extends React.Component {
           </TabPanel>
           <TabPanel>
             <div className="preference">
-              <h4 className="preference__title">Lint warning sound</h4>
+              <h4 className="preference__title">Text Area</h4>
               <div className="preference__options">
                 <input
                   type="radio"
-                  onChange={() => this.props.setLintWarning(true)}
-                  aria-label="lint warning on"
-                  name="lint warning"
-                  id="lint-warning-on"
+                  onChange={() => this.props.setTextArea(true)}
+                  aria-label="text area on"
+                  name="text area"
+                  id="text-area-on"
                   className="preference__radio-button"
                   value="On"
-                  checked={this.props.lintWarning}
+                  checked={this.props.textArea}
                 />
-                <label htmlFor="lint-warning-on" className="preference__option">On</label>
+                <label htmlFor="text-area-on" className="preference__option">On</label>
                 <input
                   type="radio"
-                  onChange={() => this.props.setLintWarning(false)}
-                  aria-label="lint warning off"
-                  name="lint warning"
-                  id="lint-warning-off"
+                  onChange={() => this.props.setTextArea(false)}
+                  aria-label="text area off"
+                  name="text area"
+                  id="text-area-off"
                   className="preference__radio-button"
                   value="Off"
-                  checked={!this.props.lintWarning}
+                  checked={!this.props.textArea}
                 />
-                <label htmlFor="lint-warning-off" className="preference__option">Off</label>
-                <button
-                  className="preference__preview-button"
-                  onClick={() => beep.play()}
-                  aria-label="preview sound"
-                >
-                  Preview sound
-                </button>
+                <label htmlFor="text-area-off" className="preference__option">Off</label>
               </div>
             </div>
             <div className="preference">
@@ -323,6 +316,40 @@ class Preferences extends React.Component {
                 <label htmlFor="sound-output-on" className="preference__option preference__canvas">Sound</label>
               </div>
             </div>
+            <div className="preference">
+              <h4 className="preference__title">Lint warning sound</h4>
+              <div className="preference__options">
+                <input
+                  type="radio"
+                  onChange={() => this.props.setLintWarning(true)}
+                  aria-label="lint warning on"
+                  name="lint warning"
+                  id="lint-warning-on"
+                  className="preference__radio-button"
+                  value="On"
+                  checked={this.props.lintWarning}
+                />
+                <label htmlFor="lint-warning-on" className="preference__option">On</label>
+                <input
+                  type="radio"
+                  onChange={() => this.props.setLintWarning(false)}
+                  aria-label="lint warning off"
+                  name="lint warning"
+                  id="lint-warning-off"
+                  className="preference__radio-button"
+                  value="Off"
+                  checked={!this.props.lintWarning}
+                />
+                <label htmlFor="lint-warning-off" className="preference__option">Off</label>
+                <button
+                  className="preference__preview-button"
+                  onClick={() => beep.play()}
+                  aria-label="preview sound"
+                >
+                  Preview sound
+                </button>
+              </div>
+            </div>
           </TabPanel>
         </Tabs>
       </section>
@@ -343,9 +370,11 @@ Preferences.propTypes = {
   textOutput: PropTypes.bool.isRequired,
   gridOutput: PropTypes.bool.isRequired,
   soundOutput: PropTypes.bool.isRequired,
+  textArea: PropTypes.bool.isRequired,
   setTextOutput: PropTypes.func.isRequired,
   setGridOutput: PropTypes.func.isRequired,
   setSoundOutput: PropTypes.func.isRequired,
+  setTextArea: PropTypes.func.isRequired,
   lintWarning: PropTypes.bool.isRequired,
   setLintWarning: PropTypes.func.isRequired,
   theme: PropTypes.string.isRequired,

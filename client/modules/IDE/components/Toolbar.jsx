@@ -59,6 +59,15 @@ class Toolbar extends React.Component {
     return (
       <div className="toolbar">
         <button
+          onClick={() => {
+            this.props.setTextArea(true);
+            this.props.setTextOutput(true);
+            this.props.setGridOutput(true);
+          }}
+        >
+        TextArea
+        </button>
+        <button
           className="toolbar__play-sketch-button"
           onClick={this.props.startAccessibleSketch}
           aria-label="play sketch"
@@ -172,7 +181,10 @@ Toolbar.propTypes = {
   startSketch: PropTypes.func.isRequired,
   startAccessibleSketch: PropTypes.func.isRequired,
   saveProject: PropTypes.func.isRequired,
-  currentUser: PropTypes.string
+  currentUser: PropTypes.string,
+  setTextArea: PropTypes.func.isRequired,
+  setTextOutput: PropTypes.func.isRequired,
+  setGridOutput: PropTypes.func.isRequired,
 };
 
 Toolbar.defaultProps = {
