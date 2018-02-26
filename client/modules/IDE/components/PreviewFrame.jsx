@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import PropTypes from 'prop-types';
+import React from 'react';
 import ReactDOM from 'react-dom';
 // import escapeStringRegexp from 'escape-string-regexp';
 import srcDoc from 'srcdoc-polyfill';
@@ -7,18 +8,18 @@ import loopProtect from 'loop-protect';
 import { JSHINT } from 'jshint';
 import { getBlobUrl } from '../actions/files';
 import { resolvePathToFile } from '../../../../server/utils/filePath';
+import {
+  MEDIA_FILE_REGEX,
+  MEDIA_FILE_QUOTED_REGEX,
+  STRING_REGEX,
+  TEXT_FILE_REGEX,
+  EXTERNAL_LINK_REGEX,
+  NOT_EXTERNAL_LINK_REGEX
+} from '../../../../server/utils/fileUtils';
 
 const decomment = require('decomment');
 
 const startTag = '@fs-';
-// eslint-disable-next-line max-len
-const MEDIA_FILE_REGEX = /^('|")(?!(http:\/\/|https:\/\/)).*\.(png|jpg|jpeg|gif|bmp|mp3|wav|aiff|ogg|json|txt|csv|svg|obj|mp4|ogg|webm|mov|otf|ttf|m4a)('|")$/i;
-// eslint-disable-next-line max-len
-const MEDIA_FILE_REGEX_NO_QUOTES = /^(?!(http:\/\/|https:\/\/)).*\.(png|jpg|jpeg|gif|bmp|mp3|wav|aiff|ogg|json|txt|csv|svg|obj|mp4|ogg|webm|mov|otf|ttf|m4a)$/i;
-const STRING_REGEX = /(['"])((\\\1|.)*?)\1/gm;
-const TEXT_FILE_REGEX = /(.+\.json$|.+\.txt$|.+\.csv$)/i;
-const NOT_EXTERNAL_LINK_REGEX = /^(?!(http:\/\/|https:\/\/))/;
-const EXTERNAL_LINK_REGEX = /^(http:\/\/|https:\/\/)/;
 
 function getAllScriptOffsets(htmlFile) {
   const offs = [];
@@ -168,9 +169,9 @@ class PreviewFrame extends React.Component {
     // or loops.
     JSHINT(newContent);
 
-    if (!JSHINT.errors) {
+    if (JSHINT.errors.length === 0) {
       newContent = decomment(newContent, {
-        ignore: /noprotect/g,
+        ignore: /\/\/\s*noprotect/g,
         space: true
       });
       newContent = loopProtect(newContent);
@@ -198,49 +199,42 @@ class PreviewFrame extends React.Component {
     this.resolveScripts(sketchDoc, resolvedFiles);
     this.resolveStyles(sketchDoc, resolvedFiles);
 
-    let scriptsToInject = [
+    const scriptsToInject = [
       '/loop-protect.min.js',
       '/hijackConsole.js'
     ];
-    if (
-      this.props.isAccessibleOutputPlaying ||
-      ((this.props.textOutput || this.props.gridOutput || this.props.soundOutput) && this.props.isPlaying)) {
-      let interceptorScripts = [];
-      interceptorScripts = [
-        '/p5-interceptor/registry.js',
-        '/p5-interceptor/loadData.js',
-        '/p5-interceptor/interceptorHelperFunctions.js',
-        '/p5-interceptor/baseInterceptor.js',
-        '/p5-interceptor/entities/entity.min.js',
-        '/p5-interceptor/ntc.min.js'
-      ];
-      if (!this.props.textOutput && !this.props.gridOutput && !this.props.soundOutput) {
-        this.props.setTextOutput(true);
-      }
-      if (this.props.textOutput) {
-        let textInterceptorScripts = [];
-        textInterceptorScripts = [
-          '/p5-interceptor/textInterceptor/interceptorFunctions.js',
-          '/p5-interceptor/textInterceptor/interceptorP5.js'
-        ];
-        interceptorScripts = interceptorScripts.concat(textInterceptorScripts);
-      }
-      if (this.props.gridOutput) {
-        let gridInterceptorScripts = [];
-        gridInterceptorScripts = [
-          '/p5-interceptor/gridInterceptor/interceptorFunctions.js',
-          '/p5-interceptor/gridInterceptor/interceptorP5.js'
-        ];
-        interceptorScripts = interceptorScripts.concat(gridInterceptorScripts);
-      }
-      if (this.props.soundOutput) {
-        let soundInterceptorScripts = [];
-        soundInterceptorScripts = [
-          '/p5-interceptor/soundInterceptor/interceptorP5.js'
-        ];
-        interceptorScripts = interceptorScripts.concat(soundInterceptorScripts);
-      }
-      scriptsToInject = scriptsToInject.concat(interceptorScripts);
+    const accessiblelib = sketchDoc.createElement('script');
+    accessiblelib.setAttribute('src', 'https://cdn.rawgit.com/MathuraMG/p5-accessibility/9cb5bd0b/dist/p5-accessibility.js');
+    const accessibleOutputs = sketchDoc.createElement('section');
+    accessibleOutputs.setAttribute('id', 'accessible-outputs');
+    accessibleOutputs.style.position = 'absolute';
+    accessibleOutputs.style.left = '-1000px';
+    accessibleOutputs.style.top = 'auto';
+    accessibleOutputs.style.width = '1px';
+    accessibleOutputs.style.height = '1px';
+    accessibleOutputs.style.overflow = 'hidden';
+    if (this.props.textOutput) {
+      sketchDoc.body.appendChild(accessibleOutputs);
+      sketchDoc.body.appendChild(accessiblelib);
+      const textSection = sketchDoc.createElement('section');
+      textSection.setAttribute('id', 'textOutput-content');
+      sketchDoc.getElementById('accessible-outputs').appendChild(textSection);
+      this.iframeElement.focus();
+    }
+    if (this.props.gridOutput) {
+      sketchDoc.body.appendChild(accessibleOutputs);
+      sketchDoc.body.appendChild(accessiblelib);
+      const gridSection = sketchDoc.createElement('section');
+      gridSection.setAttribute('id', 'gridOutput-content');
+      sketchDoc.getElementById('accessible-outputs').appendChild(gridSection);
+      this.iframeElement.focus();
+    }
+    if (this.props.soundOutput) {
+      sketchDoc.body.appendChild(accessibleOutputs);
+      sketchDoc.body.appendChild(accessiblelib);
+      const soundSection = sketchDoc.createElement('section');
+      soundSection.setAttribute('id', 'soundOutput-content');
+      sketchDoc.getElementById('accessible-outputs').appendChild(soundSection);
     }
 
     scriptsToInject.forEach((scriptToInject) => {
@@ -263,9 +257,9 @@ class PreviewFrame extends React.Component {
     const elements = sketchDoc.querySelectorAll(`[${attr}]`);
     const elementsArray = Array.prototype.slice.call(elements);
     elementsArray.forEach((element) => {
-      if (element.getAttribute(attr).match(MEDIA_FILE_REGEX_NO_QUOTES)) {
+      if (element.getAttribute(attr).match(MEDIA_FILE_REGEX)) {
         const resolvedFile = resolvePathToFile(element.getAttribute(attr), files);
-        if (resolvedFile) {
+        if (resolvedFile && resolvedFile.url) {
           element.setAttribute(attr, resolvedFile.url);
         }
       }
@@ -291,7 +285,7 @@ class PreviewFrame extends React.Component {
     let jsFileStrings = content.match(STRING_REGEX);
     jsFileStrings = jsFileStrings || [];
     jsFileStrings.forEach((jsFileString) => {
-      if (jsFileString.match(MEDIA_FILE_REGEX)) {
+      if (jsFileString.match(MEDIA_FILE_QUOTED_REGEX)) {
         const filePath = jsFileString.substr(1, jsFileString.length - 2);
         const resolvedFile = resolvePathToFile(filePath, files);
         if (resolvedFile) {
@@ -315,7 +309,7 @@ class PreviewFrame extends React.Component {
     let cssFileStrings = content.match(STRING_REGEX);
     cssFileStrings = cssFileStrings || [];
     cssFileStrings.forEach((cssFileString) => {
-      if (cssFileString.match(MEDIA_FILE_REGEX)) {
+      if (cssFileString.match(MEDIA_FILE_QUOTED_REGEX)) {
         const filePath = cssFileString.substr(1, cssFileString.length - 2);
         const resolvedFile = resolvePathToFile(filePath, files);
         if (resolvedFile) {
@@ -407,7 +401,7 @@ class PreviewFrame extends React.Component {
         frameBorder="0"
         title="sketch output"
         ref={(element) => { this.iframeElement = element; }}
-        sandbox="allow-scripts allow-pointer-lock allow-same-origin allow-popups allow-forms"
+        sandbox="allow-scripts allow-pointer-lock allow-same-origin allow-popups allow-forms allow-modals"
       />
     );
   }
@@ -419,7 +413,6 @@ PreviewFrame.propTypes = {
   textOutput: PropTypes.bool.isRequired,
   gridOutput: PropTypes.bool.isRequired,
   soundOutput: PropTypes.bool.isRequired,
-  setTextOutput: PropTypes.func.isRequired,
   htmlFile: PropTypes.shape({
     content: PropTypes.string.isRequired
   }).isRequired,

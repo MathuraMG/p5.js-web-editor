@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import PropTypes from 'prop-types';
+import React from 'react';
 import { Link } from 'react-router';
 import InlineSVG from 'react-inlinesvg';
 import classNames from 'classnames';
@@ -98,10 +99,13 @@ class Nav extends React.PureComponent {
               <InlineSVG className="nav__item-header-triangle" src={triangleUrl} />
             </button>
             <ul className="nav__dropdown">
-              <li className="nav__dropdown-heading">
+              <button
+                onClick={this.toggleDropdown.bind(this, 'file')}
+                className="nav__dropdown-heading"
+              >
                 <span>File</span>
                 <InlineSVG src={triangleUrl} />
-              </li>
+              </button>
               <li className="nav__dropdown-item">
                 <button
                   onClick={() => {
@@ -166,6 +170,7 @@ class Nav extends React.PureComponent {
               <li className="nav__dropdown-item">
                 <button
                   onClick={() => {
+                    this.props.autosaveProject();
                     this.props.exportProjectAsZip(this.props.project.id);
                     this.setDropdown('none');
                   }}
@@ -208,10 +213,13 @@ class Nav extends React.PureComponent {
               <InlineSVG className="nav__item-header-triangle" src={triangleUrl} />
             </button>
             <ul className="nav__dropdown">
-              <li className="nav__dropdown-heading">
+              <button
+                onClick={this.toggleDropdown.bind(this, 'edit')}
+                className="nav__dropdown-heading"
+              >
                 <span>Edit</span>
                 <InlineSVG src={triangleUrl} />
-              </li>
+              </button>
               <li className="nav__dropdown-item">
                 <button
                   onClick={() => {
@@ -276,10 +284,13 @@ class Nav extends React.PureComponent {
               <InlineSVG className="nav__item-header-triangle" src={triangleUrl} />
             </button>
             <ul className="nav__dropdown">
-              <li className="nav__dropdown-heading">
+              <button
+                onClick={this.toggleDropdown.bind(this, 'sketch')}
+                className="nav__dropdown-heading"
+              >
                 <span>Sketch</span>
                 <InlineSVG src={triangleUrl} />
-              </li>
+              </button>
               <li className="nav__dropdown-item">
                 <button
                   onClick={() => {
@@ -340,14 +351,17 @@ class Nav extends React.PureComponent {
               onBlur={this.handleBlur}
               onFocus={this.clearHideTimeout}
             >
-              <span className="nav__item-header">Help</span>
+              <span className="nav__item-header">Help & Feedback</span>
               <InlineSVG className="nav__item-header-triangle" src={triangleUrl} />
             </button>
             <ul className="nav__dropdown">
-              <li className="nav__dropdown-heading">
-                <span>Help</span>
+              <button
+                onClick={this.toggleDropdown.bind(this, 'help')}
+                className="nav__dropdown-heading"
+              >
+                <span>Help & Feedback</span>
                 <InlineSVG src={triangleUrl} />
-              </li>
+              </button>
               <li className="nav__dropdown-item">
                 <button
                   onClick={() => {
@@ -376,6 +390,16 @@ class Nav extends React.PureComponent {
                   onClick={this.setDropdown.bind(this, 'none')}
                 >
                   About
+                </Link>
+              </li>
+              <li className="nav__dropdown-item">
+                <Link
+                  to="/feedback"
+                  onFocus={this.handleFocus.bind(this, 'help')}
+                  onBlur={this.handleBlur}
+                  onClick={this.setDropdown.bind(this, 'none')}
+                >
+                  Feedback
                 </Link>
               </li>
             </ul>
@@ -408,10 +432,13 @@ class Nav extends React.PureComponent {
               </button>
               <InlineSVG className="nav__item-header-triangle" src={triangleUrl} />
               <ul className="nav__dropdown">
-                <li className="nav__dropdown-heading">
+                <button
+                  onClick={this.toggleDropdown.bind(this, 'account')}
+                  className="nav__dropdown-heading"
+                >
                   <span>My Account</span>
                   <InlineSVG src={triangleUrl} />
-                </li>
+                </button>
                 <li className="nav__dropdown-item">
                   <Link
                     to={`/${this.props.user.username}/sketches`}
@@ -476,6 +503,7 @@ class Nav extends React.PureComponent {
 Nav.propTypes = {
   newProject: PropTypes.func.isRequired,
   saveProject: PropTypes.func.isRequired,
+  autosaveProject: PropTypes.func.isRequired,
   exportProjectAsZip: PropTypes.func.isRequired,
   cloneProject: PropTypes.func.isRequired,
   user: PropTypes.shape({
