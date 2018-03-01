@@ -1,11 +1,11 @@
 import objectID from 'bson-objectid';
 import * as ActionTypes from '../../../constants';
 
-const defaultSketch = `function setup() { 
+const defaultSketch = `function setup() {
   createCanvas(400, 400);
-} 
+}
 
-function draw() { 
+function draw() {
   background(220);
 }`;
 
@@ -21,6 +21,7 @@ const defaultHTML =
 
   </head>
   <body>
+    <section aria-label='accessible output' id='accessible-outputs'></section>
     <script src="sketch.js"></script>
     </body>
 </html>
@@ -30,6 +31,15 @@ const defaultCSS =
 `html, body {
   margin: 0;
   padding: 0;
+}
+
+#accessible-outputs {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
 `;
 
