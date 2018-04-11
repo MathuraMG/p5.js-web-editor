@@ -180,6 +180,11 @@ class IDEView extends React.Component {
     } else if (e.keyCode === 49 && ((e.metaKey && this.isMac) || (e.ctrlKey && !this.isMac)) && e.shiftKey) {
       e.preventDefault();
       this.props.setAllAccessibleOutput(true);
+    } else if (e.keyCode === 9) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('poop1 ');
+      // your saving code
     }
   }
 
