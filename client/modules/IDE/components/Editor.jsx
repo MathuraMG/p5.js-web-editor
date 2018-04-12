@@ -263,7 +263,6 @@ class Editor extends React.Component {
     }
     return mode;
   }
-
   initializeDocuments(files) {
     this._docs = {};
     files.forEach((file) => {
@@ -272,7 +271,29 @@ class Editor extends React.Component {
       }
     });
   }
+  foldAllCode() {
+    this._cm.operation(() => {
+      for (let l = this._cm.firstLine(); l <= this._cm.lastLine(); ++l) { //eslint-disable-line
+        this._cm.foldCode({ line: l, ch: 0 }, null, 'fold');
+      }
+    });
+  }
 
+  unfoldAllCode() {
+    this._cm.operation(() => {
+      for (let l = this._cm.firstLine(); l <= this._cm.lastLine(); ++l) { //eslint-disable-line
+        this._cm.foldCode({ line: l, ch: 0 }, null, 'unfold');
+      }
+    });
+  }
+
+  foldCode() {
+    this._cm.foldCode({ line: this._cm.getCursor().line, ch: 0 }, null, 'fold');
+  }
+
+  unfoldCode() {
+    this._cm.foldCode({ line: this._cm.getCursor().line, ch: 0 }, null, 'unfold');
+  }
   tidyCode() {
     const beautifyOptions = {
       indent_size: this.props.indentationAmount,
