@@ -69,6 +69,10 @@ class Editor extends React.Component {
     this.showFind = this.showFind.bind(this);
     this.findNext = this.findNext.bind(this);
     this.findPrev = this.findPrev.bind(this);
+    this.foldAllCode = this.foldAllCode.bind(this);
+    this.unfoldAllCode = this.unfoldAllCode.bind(this);
+    this.foldCode = this.foldCode.bind(this);
+    this.unfoldCode = this.unfoldCode.bind(this);
   }
 
   componentDidMount() {
@@ -106,6 +110,22 @@ class Editor extends React.Component {
       [`${metaKey}-F`]: 'findPersistent',
       [`${metaKey}-G`]: 'findNext',
       [`Shift-${metaKey}-G`]: 'findPrev',
+      [`${metaKey}-K ${metaKey}-Up`]: () => {
+        console.log('collapse all');
+        this.foldAllCode();
+      },
+      [`${metaKey}-K ${metaKey}-Down`]: () => {
+        console.log('uncollapse all');
+        this.unfoldAllCode();
+      },
+      [`${metaKey}-K ${metaKey}-Left`]: () => {
+        console.log('collapse one');
+        this.foldCode();
+      },
+      [`${metaKey}-K ${metaKey}-Right`]: () => {
+        console.log('uncollapse one');
+        this.unfoldCode();
+      }
     });
 
     this.initializeDocuments(this.props.files);
@@ -217,7 +237,6 @@ class Editor extends React.Component {
     }
     return mode;
   }
-
   initializeDocuments(files) {
     this._docs = {};
     files.forEach((file) => {
@@ -226,7 +245,29 @@ class Editor extends React.Component {
       }
     });
   }
+  foldAllCode() {
+    this._cm.operation(() => {
+      for (let l = this._cm.firstLine(); l <= this._cm.lastLine(); ++l) { //eslint-disable-line
+        this._cm.foldCode({ line: l, ch: 0 }, null, 'fold');
+      }
+    });
+  }
 
+  unfoldAllCode() {
+    this._cm.operation(() => {
+      for (let l = this._cm.firstLine(); l <= this._cm.lastLine(); ++l) { //eslint-disable-line
+        this._cm.foldCode({ line: l, ch: 0 }, null, 'unfold');
+      }
+    });
+  }
+
+  foldCode() {
+    this._cm.foldCode({ line: this._cm.getCursor().line, ch: 0 }, null, 'fold');
+  }
+
+  unfoldCode() {
+    this._cm.foldCode({ line: this._cm.getCursor().line, ch: 0 }, null, 'unfold');
+  }
   tidyCode() {
     const beautifyOptions = {
       indent_size: this.props.indentationAmount,
