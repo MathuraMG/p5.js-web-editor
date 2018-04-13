@@ -164,31 +164,6 @@ class Editor extends React.Component {
     });
   }
 
-  foldAllCode() {
-    this._cm.operation(() => {
-      for (let l = this._cm.firstLine(); l <= this._cm.lastLine(); ++l) //eslint-disable-line
-      {
-        this._cm.foldCode({ line: l, ch: 0 }, null, 'fold');
-      }
-    });
-  }
-
-  unfoldAllCode() {
-    this._cm.operation(() => {
-      for (let l = this._cm.firstLine(); l <= this._cm.lastLine(); ++l) //eslint-disable-line
-      {
-        this._cm.foldCode({ line: l, ch: 0 }, null, 'unfold');
-      }
-    });
-  }
-
-  foldCode() {
-    this._cm.foldCode({ line: this._cm.getCursor().line, ch: 0 }, null, 'fold');
-  }
-
-  unfoldCode() {
-    this._cm.foldCode({ line: this._cm.getCursor().line, ch: 0 }, null, 'unfold');
-  }
 
   componentWillUpdate(nextProps) {
     // check if files have changed
@@ -262,6 +237,30 @@ class Editor extends React.Component {
       mode = 'text/plain';
     }
     return mode;
+  }
+
+  foldAllCode() {
+    this._cm.operation(() => {
+      for (let l = this._cm.firstLine(); l <= this._cm.lastLine(); ++l){ //eslint-disable-line
+        this._cm.foldCode({ line: l, ch: 0 }, null, 'fold');
+      }
+    });
+  }
+
+  unfoldAllCode() {
+    this._cm.operation(() => {
+      for (let l = this._cm.firstLine(); l <= this._cm.lastLine(); ++l){ //eslint-disable-line
+        this._cm.foldCode({ line: l, ch: 0 }, null, 'unfold');
+      }
+    });
+  }
+
+  foldCode() {
+    this._cm.foldCode({ line: this._cm.getCursor().line, ch: 0 }, null, 'fold');
+  }
+
+  unfoldCode() {
+    this._cm.foldCode({ line: this._cm.getCursor().line, ch: 0 }, null, 'unfold');
   }
 
   initializeDocuments(files) {
